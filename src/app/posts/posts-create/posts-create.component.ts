@@ -1,8 +1,10 @@
 import { Component,EventEmitter,Output, OnInit } from '@angular/core';
 import { Post } from '../post.model';
-import { NgForm } from '@angular/forms';
+import { NgForm, FormGroup, FormControl, Validators } from '@angular/forms';
 import { PostsService } from '../posts.service';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+
+import { mimeType } from './mime-type.validator';
 
 
 @Component({
@@ -20,6 +22,8 @@ export class PostCreateComponent implements OnInit{
   private mode = 'create';
   private postId:string;
 
+  form: FormGroup; // for reactive forms
+  imagePreview:string;
 
   constructor(public postsService:PostsService, public route: ActivatedRoute ){}
   //newPost = 'No Content';
@@ -42,7 +46,41 @@ export class PostCreateComponent implements OnInit{
   //   this.postCreated.emit(post);
   // }
 
+  //USE WHEN TEMPLATE FORMS WERE USED IN HTML
+  // ngOnInit(){
+  //   this.route.paramMap.subscribe((paramMap:ParamMap)=>{
+  //     if (paramMap.has('postId')){
+  //       this.mode = 'edit';
+  //       this.postId = paramMap.get('postId');
+  //       this.isLoading = true;
+  //       this.postsService.getPost(this.postId).subscribe(postData => {
+  //         this.isLoading = false;
+  //         this.post = { id:postData._id, title:postData.title, content:postData.content};
+  //       });
+  //     } else {
+  //       this.mode='create';
+  //       this.postId = null;
+  //     }
+  //   });
+
+  // }
+
+  //REACTIVE FORM APPROACH
   ngOnInit(){
+    this.form = new FormGroup({
+      'title': new FormControl(null,
+        {validators: [Validators.required, Validators.minLength(3)]
+        }),
+
+        'content': new FormControl(null,
+          {validators: [Validators.required]
+        }),
+
+        'image': new FormControl(null,{
+          validators:[Validators.required],
+          asyncValidators: [mimeType]
+        })
+    });
     this.route.paramMap.subscribe((paramMap:ParamMap)=>{
       if (paramMap.has('postId')){
         this.mode = 'edit';
@@ -50,8 +88,19 @@ export class PostCreateComponent implements OnInit{
         this.isLoading = true;
         this.postsService.getPost(this.postId).subscribe(postData => {
           this.isLoading = false;
-          this.post = { id:postData._id, title:postData.title, content:postData.content};
+          this.post = { id:postData._id,
+                        title:postData.title,
+                        content:postData.content,
+                        imagePath:postData.imagePath,
+                        creator: postData.creator
+                      };
+          this.form.setValue({
+            'title':this.post.title,
+            'content':this.post.content,
+            'image':this.post.imagePath
+          });
         });
+
       } else {
         this.mode='create';
         this.postId = null;
@@ -60,27 +109,65 @@ export class PostCreateComponent implements OnInit{
 
   }
 
-  //Using Form Module of Angular
-  onSavePost(form:NgForm)
+  //USING TEMPLATE DRIVEN FORM MODULE
+  // onSavePost(form:NgForm)
+  // {
+  //   if(form.invalid)
+  //     return;
+
+  //   this.isLoading = true;
+  //   const post:Post={
+  //     id:null,
+  //     title:form.value.title,
+  //     content: form.value.content
+  //   }
+  //   //emit method id removed with service
+  //   //this.postCreated.emit(post)
+
+  //   if(this.mode==='create'){
+  //     this.postsService.addPost(post.title,post.content);
+  //   }else{
+  //     this.postsService.updatePost(this.postId,form.value.title,form.value.content);
+  //   }
+  //   form.resetForm();
+
+  // }
+
+  onImagePicked(event: Event){
+    const file = (event.target as HTMLInputElement).files[0];
+    this.form.patchValue({'image': file});
+    this.form.get('image').updateValueAndValidity();
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      this.imagePreview = reader.result.toString();
+    }
+    reader.readAsDataURL(file);
+  }
+
+
+  // Reactive form approach
+  onSavePost()
   {
-    if(form.invalid)
+    if(this.form.invalid){
+      alert("Please enter Valid Details");
       return;
+    }
 
     this.isLoading = true;
-    const post:Post={
-      id:null,
-      title:form.value.title,
-      content: form.value.content
-    }
+    // const post:Post={
+    //   id:null,
+    //   title:form.value.title,
+    //   content: form.value.content
+    // }
     //emit method id removed with service
     //this.postCreated.emit(post)
 
     if(this.mode==='create'){
-      this.postsService.addPost(post.title,post.content);
+      this.postsService.addPost(this.form.value.title,this.form.value.content,this.form.value.image);
     }else{
-      this.postsService.updatePost(this.postId,form.value.title,form.value.content);
+      this.postsService.updatePost(this.postId,this.form.value.title,this.form.value.content,this.form.value.image);
     }
-    form.resetForm();
+    this.form.reset();
 
   }
 }
