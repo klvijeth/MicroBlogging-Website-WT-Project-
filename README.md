@@ -1,6 +1,8 @@
 # MeanCourse
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.0.7.
+## Install Dependencies
+Run `npm install` from the project folder. The app reads package.json file and installs all dependencies
 
 ## Development server
 
