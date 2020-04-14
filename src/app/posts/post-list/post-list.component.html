@@ -1,3 +1,6 @@
+<mat-card class="header" *ngIf="userIsAuthenticated">
+  <mat-card-content>Welcome {{ email }}</mat-card-content>
+</mat-card>
 <mat-spinner *ngIf="isLoading"></mat-spinner>
 <mat-accordion multi="true" *ngIf="posts.length>0 && !isLoading">
   <mat-expansion-panel *ngFor="let post of posts">

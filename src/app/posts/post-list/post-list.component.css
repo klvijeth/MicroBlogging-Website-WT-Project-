@@ -1,6 +1,13 @@
 /* mat-expansion-panel{
   margin-top: 30px;
 } */
+
+.header{
+  max-width: 400px;
+  font-style: italic;
+  font-weight: 500;
+}
+
 :host{
   display: block;
   margin-top: 1rem;
