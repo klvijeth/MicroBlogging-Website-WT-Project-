@@ -1,9 +1,20 @@
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <mat-card class="header" *ngIf="userIsAuthenticated">
   <mat-card-content>Welcome {{ email }}</mat-card-content>
 </mat-card>
+<mat-form-field class="example-form-field">
+  <mat-label>Search</mat-label>
+  <input matInput type="text" [(ngModel)]="value">
+  <button mat-button  matSuffix mat-icon-button aria-label="Clear" (click)="search()">
+    <mat-icon>done</mat-icon>
+  </button>
+  <button mat-button *ngIf="value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
 <mat-spinner *ngIf="isLoading"></mat-spinner>
 <mat-accordion multi="true" *ngIf="posts.length>0 && !isLoading">
-  <mat-expansion-panel *ngFor="let post of posts">
+  <mat-expansion-panel *ngFor="let post of postsToDisplay">
     <mat-expansion-panel-header>
       {{ post.title }}
     </mat-expansion-panel-header>

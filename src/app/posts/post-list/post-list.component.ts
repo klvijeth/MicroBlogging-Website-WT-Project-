@@ -28,6 +28,7 @@ export class PostListComponent implements OnInit,OnDestroy{
   //   }
   // ]
   posts:Post [] = [];
+  postsToDisplay:Post [] = [];
   isLoading = false;
   userId:string;
   email:string;
@@ -36,6 +37,7 @@ export class PostListComponent implements OnInit,OnDestroy{
   currentPage = 1;
   userIsAuthenticated = false;
   pageSizeOptions = [1,2,5,10];
+  value = "";
   private postsSub: Subscription;
   // postsService: PostsService;
   private authStatusSub: Subscription;
@@ -58,6 +60,7 @@ export class PostListComponent implements OnInit,OnDestroy{
       this.isLoading=false;
       this.totalPosts = postData.postCount;
       this.posts = postData.posts;
+      this.postsToDisplay = postData.posts;
     });
     this.userIsAuthenticated = this.authSerivce.getIsAuth();
     this.authStatusSub = this.authSerivce.getAuthStatusListener().subscribe(isAuthenticated=>{
@@ -65,6 +68,21 @@ export class PostListComponent implements OnInit,OnDestroy{
       this.userId = this.authSerivce.getUserId();
       this.email = this.authSerivce.getUserMail();
     })
+  }
+
+  search(){
+      this.postsToDisplay = [];
+      for(let num in this.posts){
+        if(this.posts[num].title.includes(this.value))
+          this.postsToDisplay.push(this.posts[num]);
+      }
+      console.log(this.postsToDisplay);
+
+  }
+
+  clearSearch(){
+    this.value="";
+    this.ngOnInit();
   }
 
   onChangedPage(pageData: PageEvent){
